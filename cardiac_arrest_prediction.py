@@ -13,7 +13,7 @@ import optuna
 
 
 
-df = pd.read_csv(r"C:\Users\adamp\OneDrive\Desktop\projekty\cardiac_arrest_prediction\data.csv"
+df = pd.read_csv(r"cardiac_arrest_prediction.csv"
                    ,engine='python')
 
 
@@ -118,13 +118,5 @@ for i in range(elastic_df.shape[0]):
 best_EN = ElasticNet(alpha = 0.1,max_iter=500)
 best_EN.fit(X_train,y_train)
 score_best_EN = best_EN.score(X_test,y_test)
-
-
-
-
-
-
-
-
 
 
