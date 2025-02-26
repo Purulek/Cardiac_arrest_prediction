@@ -88,6 +88,40 @@ X_train, X_test, y_train, y_test = train_test_split(std_X, y, test_size=0.2)
 
 # testing difrent models
 
+def objectiveLR(trial):
+
+    C = trial.suggest_loguniform('C', 1e-4, 10.0) 
+    solver = trial.suggest_categorical('solver', ['newton-cg', 'lbfgs', 'liblinear'])  
+
+
+    lr = LogisticRegression(C=C, solver=solver, max_iter=500)
+
+    lr.fit(X_train,y_train)
+    
+
+    y_pred = lr.predict(X_test)
+
+    accuracy = lr.score(X_test, y_test)
+    
+    return accuracy 
+
+
+
+
+
+
+study = optuna.create_study(direction='maximize') 
+study.optimize(objective, n_trials=50)
+
+best_params = study.best_params
+
+best_model = LogisticRegression(C=best_params['C'], solver=best_params['solver'], max_iter=500)
+best_model.fit(X_train, y_train)
+
+score_lr_best_params = best_model.score(X_test,y_test)
+
+
+
 #LogisticRegression
 lr = LogisticRegression()
 lr.fit(X_train,y_train)
