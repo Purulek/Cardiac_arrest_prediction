@@ -7,13 +7,13 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import ElasticNet
 from sklearn.metrics import r2_score
 from sklearn.preprocessing import StandardScaler
-from scipy import stats
+
 import seaborn as sns
 import optuna
 
 
 
-df = pd.read_csv(r"cardiac_arrest_prediction.csv"
+df = pd.read_csv(r"C:\Users\adamp\OneDrive\Desktop\projekty\data_machine\data.csv"
                    ,engine='python')
 
 
@@ -86,8 +86,9 @@ std_X = scaler.transform(X)
 
 X_train, X_test, y_train, y_test = train_test_split(std_X, y, test_size=0.2)
 
-# testing difrent models
+# testing diffrent models
 
+#LogisticRegression
 def objectiveLR(trial):
 
     C = trial.suggest_loguniform('C', 1e-4, 10.0) 
@@ -99,8 +100,6 @@ def objectiveLR(trial):
     lr.fit(X_train,y_train)
     
 
-    y_pred = lr.predict(X_test)
-
     accuracy = lr.score(X_test, y_test)
     
     return accuracy 
@@ -109,9 +108,8 @@ def objectiveLR(trial):
 
 
 
-
 study = optuna.create_study(direction='maximize') 
-study.optimize(objective, n_trials=50)
+study.optimize(objectiveLR, n_trials=50)
 
 best_params = study.best_params
 
@@ -122,16 +120,48 @@ score_lr_best_params = best_model.score(X_test,y_test)
 
 
 
-#LogisticRegression
-lr = LogisticRegression()
-lr.fit(X_train,y_train)
-score_lr = lr.score(X_test,y_test)
-
 
 #RandomForestClassifier
-rfc = RandomForestClassifier()
-rfc.fit(X_train,y_train)
-score_rfc = rfc.score(X_test,y_test)
+def objectiveRFC(trial):
+
+
+    n_estimators = trial.suggest_int('n_estimators', 50, 300)  
+    max_depth = trial.suggest_int('max_depth', 3, 20) 
+    min_samples_split = trial.suggest_int('min_samples_split', 2, 10)  
+    min_samples_leaf = trial.suggest_int('min_samples_leaf', 1, 10)  
+    max_features = trial.suggest_categorical('max_features', ['sqrt', 'log2', None])  
+
+    rfc = RandomForestClassifier(n_estimators= n_estimators,
+                                 max_depth =  max_depth, 
+                                 min_samples_split= min_samples_split, 
+                                 min_samples_leaf = min_samples_leaf,
+                                 max_features = max_features,
+                                 random_state=42)
+
+    rfc.fit(X_train,y_train)
+    
+
+    accuracy = rfc.score(X_test, y_test)
+    
+    return accuracy 
+
+
+
+
+study = optuna.create_study(direction='maximize') 
+study.optimize(objectiveRFC, n_trials=50)
+
+best_params_rfc = study.best_params
+
+best_model_rfc = RandomForestClassifier(n_estimators= best_params_rfc['n_estimators'],
+                             max_depth =  best_params_rfc['max_depth'], 
+                             min_samples_split= best_params_rfc['min_samples_split'], 
+                             min_samples_leaf = best_params_rfc['min_samples_leaf'],
+                             max_features = best_params_rfc['max_features'],
+                             random_state=42)
+best_model_rfc.fit(X_train, y_train)
+
+score_rfc_best_params = best_model_rfc.score(X_test,y_test)
 
 
 #ElasticNet
