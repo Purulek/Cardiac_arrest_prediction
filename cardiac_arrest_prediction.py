@@ -5,10 +5,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import ElasticNet
-from sklearn.metrics import r2_score
 from sklearn.preprocessing import StandardScaler
-
-import seaborn as sns
 import optuna
 
 
@@ -106,8 +103,6 @@ def objectiveLR(trial):
 
 
 
-
-
 study = optuna.create_study(direction='maximize') 
 study.optimize(objectiveLR, n_trials=50)
 
@@ -169,15 +164,6 @@ elastic_df = pd.DataFrame({'param_value': np.arange(start = 0.1, stop = 10.2, st
                       'r2_result': 0.,
                       'number_of_features':0})
  
-for i in range(elastic_df.shape[0]):
-    
-    alpha = elastic_df.at[i, 'param_value']
-    EN = ElasticNet(alpha=alpha,max_iter=500)
-    EN.fit(X_train, y_train)
-    elastic_df.at[i, 'r2_result'] = r2_score(y_test, EN.predict(X_test))
-    elastic_df.at[i, 'number_of_features'] = len(EN.coef_[ EN.coef_ > 0])
-
-
 
 best_EN = ElasticNet(alpha = 0.1,max_iter=500)
 best_EN.fit(X_train,y_train)
