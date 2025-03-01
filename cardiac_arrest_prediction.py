@@ -7,7 +7,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import ElasticNet
 from sklearn.preprocessing import StandardScaler
 import optuna
-
+import seaborn as sns
+from sklearn.metrics import mean_squared_error
 
 
 df = pd.read_csv(r"C:\Users\adamp\OneDrive\Desktop\projekty\data_machine\data.csv"
@@ -83,7 +84,16 @@ std_X = scaler.transform(X)
 
 X_train, X_test, y_train, y_test = train_test_split(std_X, y, test_size=0.2)
 
-# testing diffrent models
+
+
+
+#Definitons for models
+def model_testing(model, X_train,X_test,y_train,y_test):
+    model.fit(X_train,y_train)
+    return model.score(X_test,y_test)
+
+
+
 
 #LogisticRegression
 def objectiveLR(trial):
@@ -102,16 +112,6 @@ def objectiveLR(trial):
     return accuracy 
 
 
-
-study = optuna.create_study(direction='maximize') 
-study.optimize(objectiveLR, n_trials=50)
-
-best_params = study.best_params
-
-best_model = LogisticRegression(C=best_params['C'], solver=best_params['solver'], max_iter=500)
-best_model.fit(X_train, y_train)
-
-score_lr_best_params = best_model.score(X_test,y_test)
 
 
 
@@ -143,30 +143,61 @@ def objectiveRFC(trial):
 
 
 
+
+
+#ElasticNet
+def objectiveEN(trial):
+    alpha = trial.suggest_loguniform('alpha', 1e-4, 10.0) 
+    l1_ratio = trial.suggest_uniform('l1_ratio', 0.0, 1.0)  
+
+    model = ElasticNet(alpha=alpha, l1_ratio=l1_ratio, max_iter=1000, random_state=42)
+    model.fit(X_train, y_train)
+    
+    y_pred = model.predict(X_test)
+    mse = mean_squared_error(y_test, y_pred)  
+
+    return mse
+
+
+
+
+# testing diffrent models
+
+#LogisticRegression
+study = optuna.create_study(direction='maximize') 
+study.optimize(objectiveLR, n_trials=50)
+
+best_params_LR = study.best_params
+
+LR = LogisticRegression(C=best_params_LR['C'], solver=best_params_LR['solver'], max_iter=500)
+score_LR = model_testing(LR, X_train, X_test, y_train, y_test)
+
+#RandomForestClassifier
 study = optuna.create_study(direction='maximize') 
 study.optimize(objectiveRFC, n_trials=50)
 
 best_params_rfc = study.best_params
 
-best_model_rfc = RandomForestClassifier(n_estimators= best_params_rfc['n_estimators'],
+RFC = RandomForestClassifier(n_estimators= best_params_rfc['n_estimators'],
                              max_depth =  best_params_rfc['max_depth'], 
                              min_samples_split= best_params_rfc['min_samples_split'], 
                              min_samples_leaf = best_params_rfc['min_samples_leaf'],
                              max_features = best_params_rfc['max_features'],
                              random_state=42)
-best_model_rfc.fit(X_train, y_train)
 
-score_rfc_best_params = best_model_rfc.score(X_test,y_test)
+score_RFC = model_testing(RFC, X_train, X_test, y_train, y_test)
 
 
 #ElasticNet
-elastic_df = pd.DataFrame({'param_value': np.arange(start = 0.1, stop = 10.2, step = 0.1),
-                      'r2_result': 0.,
-                      'number_of_features':0})
- 
 
-best_EN = ElasticNet(alpha = 0.1,max_iter=500)
-best_EN.fit(X_train,y_train)
-score_best_EN = best_EN.score(X_test,y_test)
+study = optuna.create_study(direction="minimize")  
+study.optimize(objectiveEN, n_trials=50) 
+
+
+best_pam_EN = study.best_params
+
+EN= ElasticNet(alpha=best_pam_EN['alpha'], l1_ratio=best_pam_EN['l1_ratio'])
+
+score_EN = model_testing(EN, X_train, X_test, y_train, y_test)
 
 
