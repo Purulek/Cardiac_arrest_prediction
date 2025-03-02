@@ -153,10 +153,10 @@ def objectiveEN(trial):
     model = ElasticNet(alpha=alpha, l1_ratio=l1_ratio, max_iter=1000, random_state=42)
     model.fit(X_train, y_train)
     
-    y_pred = model.predict(X_test)
-    mse = mean_squared_error(y_test, y_pred)  
 
-    return mse
+    score_best_model_EN = model.score(X_test,y_test)
+
+    return score_best_model_EN
 
 
 
@@ -190,7 +190,7 @@ score_RFC = model_testing(RFC, X_train, X_test, y_train, y_test)
 
 #ElasticNet
 
-study = optuna.create_study(direction="minimize")  
+study = optuna.create_study(direction='maximize')  
 study.optimize(objectiveEN, n_trials=50) 
 
 
