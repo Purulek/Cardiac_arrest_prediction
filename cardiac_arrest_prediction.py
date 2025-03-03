@@ -187,17 +187,13 @@ RFC = RandomForestClassifier(n_estimators= best_params_rfc['n_estimators'],
 
 score_RFC = model_testing(RFC, X_train, X_test, y_train, y_test)
 
-
 #ElasticNet
 
 study = optuna.create_study(direction='maximize')  
 study.optimize(objectiveEN, n_trials=50) 
-
 
 best_pam_EN = study.best_params
 
 EN= ElasticNet(alpha=best_pam_EN['alpha'], l1_ratio=best_pam_EN['l1_ratio'])
 
 score_EN = model_testing(EN, X_train, X_test, y_train, y_test)
-
-
