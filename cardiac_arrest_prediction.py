@@ -158,9 +158,6 @@ def objectiveEN(trial):
 
     return score_best_model_EN
 
-
-
-
 # testing diffrent models
 
 #LogisticRegression
