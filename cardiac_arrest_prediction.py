@@ -134,7 +134,6 @@ def objectiveRFC(trial):
                                  random_state=42)
 
     rfc.fit(X_train,y_train)
-    
 
     accuracy = rfc.score(X_test, y_test)
     
