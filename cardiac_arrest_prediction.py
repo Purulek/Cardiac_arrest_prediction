@@ -138,6 +138,9 @@ def objectiveRFC(trial):
     accuracy = rfc.score(X_test, y_test)
     
     return accuracy 
+
+
+
 #ElasticNet
 def objectiveEN(trial):
     alpha = trial.suggest_loguniform('alpha', 1e-4, 10.0) 
